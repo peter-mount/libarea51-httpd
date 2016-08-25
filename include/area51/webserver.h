@@ -21,44 +21,9 @@
 
 typedef struct webserverHandler WEBSERVER_HANDLER;
 
-typedef struct {
-    // The port we will listen on
-    int port;
-    // 1 IPv4 support, 2 IPv6, 4=both
-    int stack;
-    // Our context path
-    char *contextPath;
-    // Our static response handlers
-    Hashmap *responseHandlers;
-    //
-    struct MHD_Response *homePageResponse;
-    // Not found Response
-    struct MHD_Response *notFoundResponse;
-    // redirection page to the index
-    struct MHD_Response *redirectResponse;
-    // Internal server error response
-    struct MHD_Response *errorResponse;
-    // mutex for updating any responses
-    pthread_mutex_t mutex;
-    // The webserver, one daemon per stack as a single dual stack one listens on ipv6 only
-    struct MHD_Daemon *daemon4;
-    struct MHD_Daemon *daemon6;
-    // Our handlers
-    List handlers;
-} WEBSERVER;
+typedef struct webserverRequest WEBSERVER_REQUEST;
 
-extern WEBSERVER webserver;
-
-/**
- * A handler that will respond to a specific URI on the website
- */
-struct webserverHandler {
-    Node node;
-    // The function to handle this request
-    int (*handler)(struct MHD_Connection *connection, WEBSERVER_HANDLER *handler, const char *url);
-    // optional userdata
-    void *userdata;
-};
+typedef struct webserver WEBSERVER;
 
 /**
  * Atomically replaces destResponse with newResponse, disposing the original
@@ -66,10 +31,10 @@ struct webserverHandler {
  * @param destResponse Pointer to the pointer to update
  * @param newResponse New response
  */
-extern void replaceResponse(const char *url, struct MHD_Response *newResponse);
-extern void replaceResponseArray(const char *url, void *data, int len, const char *contentType);
-extern void replaceResponseByteBuffer(const char *url, struct bytebuffer *b, const char *contentType);
-extern void replaceResponseCharBuffer(const char *url, CharBuffer *b, const char *contentType);
+extern void replaceResponse(WEBSERVER *webserver, const char *, struct MHD_Response *);
+extern void replaceResponseArray(WEBSERVER *webserver, const char *, void *, int, const char *);
+extern void replaceResponseByteBuffer(WEBSERVER *webserver, const char *, struct bytebuffer *, const char *);
+extern void replaceResponseCharBuffer(WEBSERVER *webserver, const char *, CharBuffer *, const char *);
 
 /**
  * Returns the current value of reponse atomically
@@ -77,7 +42,7 @@ extern void replaceResponseCharBuffer(const char *url, CharBuffer *b, const char
  * @param response Pointer to the pointer to get
  * @return The value at response at the time of the call, NULL if not able to get it
  */
-extern struct MHD_Response *getResponse(const char *url);
+extern struct MHD_Response *getResponse(WEBSERVER *webserver, const char *);
 
 /**
  * Queues a response to a connection. This does it atomically so that the response will be queued even if another
@@ -87,24 +52,30 @@ extern struct MHD_Response *getResponse(const char *url);
  * @param response
  * @return 
  */
-extern int queueResponse(struct MHD_Connection * connection, struct MHD_Response **response);
+extern int queueResponse(WEBSERVER_REQUEST *, struct MHD_Response **);
 
-extern char* genurl(const char *contextPath, const char *suffix);
+extern int sendResponse(WEBSERVER_REQUEST *, int status, struct MHD_Response *);
 
-extern int sendResponse(struct MHD_Connection *connection, int status, struct MHD_Response *response);
+extern WEBSERVER_HANDLER *webserver_add_handler(WEBSERVER *, const char *, int (*)(WEBSERVER_REQUEST *), void *);
+extern void webserver_add_response_handler(WEBSERVER *, const char *);
+extern WEBSERVER *webserver_new();
+extern void webserver_enableIPv4(WEBSERVER *);
+extern void webserver_enableIPv6(WEBSERVER *);
+extern void webserver_set_defaults(WEBSERVER *);
+extern void webserver_start(WEBSERVER *);
+extern void webserver_stop(WEBSERVER *);
+extern void webserver_update_index(WEBSERVER_REQUEST *);
 
-extern WEBSERVER_HANDLER * webserver_add_handler(const char *url, int (*handler)(struct MHD_Connection *connection, WEBSERVER_HANDLER *handler, const char *url));
-extern void webserver_add_response_handler(const char *url);
-extern void webserver_initialise();
-extern void webserver_enableIPv4();
-extern void webserver_enableIPv6();
-extern void webserver_set_defaults();
-extern void webserver_start();
-extern void webserver_stop();
-extern void webserver_update_index();
+extern int notFoundHandler(WEBSERVER_REQUEST *);
+extern int staticHandler(WEBSERVER_REQUEST *);
 
-extern int notFoundHandler(struct MHD_Connection * connection, WEBSERVER_HANDLER *handler);
-extern int staticHandler(struct MHD_Connection * connection, const char *url);
+extern struct MHD_Connection *webserver_getRequestConnection(WEBSERVER_REQUEST *);
+extern const char *webserver_getRequestMethod(WEBSERVER_REQUEST *);
+extern const char *webserver_getRequestUrl(WEBSERVER_REQUEST *);
+extern const char *webserver_getRequestVersion(WEBSERVER_REQUEST *);
+extern const char *webserver_getRequestUploadData(WEBSERVER_REQUEST *, size_t *);
+
+extern void *webserver_getUserData(WEBSERVER_REQUEST *);
 
 #endif /* AREA51_WEBSERVER_H */
 

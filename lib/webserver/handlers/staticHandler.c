@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <area51/string.h>
 #include <area51/webserver.h>
+#include "../webserver-int.h"
 
 /* 32k page size */
 #define STATIC_PAGE_SIZE 327667
@@ -48,7 +49,7 @@ static void free_callback(void *cls) {
  * @param connection
  * @return 
  */
-int staticHandler(struct MHD_Connection * connection, const char *url) {
+int staticHandler(WEBSERVER_REQUEST *request) {
     char *p;
     int l;
     struct stat buf;
@@ -56,22 +57,22 @@ int staticHandler(struct MHD_Connection * connection, const char *url) {
     FILE *file;
 
     // Validate url - i.e. must start with /
-    if (url[0] != '/')
+    if (request->url[0] != '/')
         return MHD_NO;
 
     // Validate url - cannot contain /. (also mean /.. as well)
     // This prevents people from scanning outside of /var/www using ../../ style url's
-    p = findString((char *) url, (char *) INVALID);
+    p = findString((char *) request->url, (char *) INVALID);
     if (p)
         return MHD_NO;
 
     // Form the file path
-    l = strlen(url) + strlen(BASE) + 1;
+    l = strlen(request->url) + strlen(BASE) + 1;
     p = (char *) malloc(l);
     if (!p)
         return MHD_NO;
     strcpy(p, BASE);
-    strcat(p, url);
+    strcat(p, request->url);
 
     // Do we have access?
     if (stat(p, &buf)) {
@@ -94,7 +95,7 @@ int staticHandler(struct MHD_Connection * connection, const char *url) {
         return MHD_NO;
     }
 
-    int ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+    int ret = MHD_queue_response(request->connection, MHD_HTTP_OK, response);
     MHD_destroy_response(response);
 
     // Cleanup

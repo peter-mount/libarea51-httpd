@@ -9,13 +9,13 @@
 #include <stdarg.h>
 #include <area51/log.h>
 #include <area51/webserver.h>
+#include "../webserver-int.h"
 
 extern int verbose;
 
-WEBSERVER_HANDLER *webserver_add_handler(const char *url, int (*handler)(struct MHD_Connection *connection, WEBSERVER_HANDLER *handler, const char *url)) {
+WEBSERVER_HANDLER *webserver_add_handler(WEBSERVER *webserver, const char *url, int (*handler)(WEBSERVER_REQUEST *), void *userdata) {
     //if (!url || strlen(url) == 0 || url[0] != '/') {
-    // TODO 
-    if (!url || strlen(url) == 0 ) {
+    if (!url || strlen(url) == 0) {
         logconsole("Invalid url \"%s\" for a handler", url);
         return NULL;
     }
@@ -25,10 +25,13 @@ WEBSERVER_HANDLER *webserver_add_handler(const char *url, int (*handler)(struct 
         logconsole("Add handler: %16lx %s", handler, url);
 
     WEBSERVER_HANDLER *h = (WEBSERVER_HANDLER *) malloc(sizeof (WEBSERVER_HANDLER));
-    memset(h, 0, sizeof (WEBSERVER_HANDLER));
-    h->node.name = strdup(url);
-    h->handler = handler;
-    list_addTail(&webserver.handlers, &h->node);
+    if (h) {
+        memset(h, 0, sizeof (WEBSERVER_HANDLER));
+        h->node.name = strdup(url);
+        h->handler = handler;
+        h->userdata = userdata;
+        list_addTail(&webserver->handlers, &h->node);
+    }
 
     return h;
 }

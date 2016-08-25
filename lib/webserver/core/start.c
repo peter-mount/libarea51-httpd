@@ -10,6 +10,7 @@
 #include <area51/list.h>
 #include <area51/log.h>
 #include <area51/webserver.h>
+#include "../webserver-int.h"
 
 extern int verbose;
 
@@ -22,29 +23,44 @@ static int handler(void * cls,
         size_t * upload_data_size,
         void ** ptr) {
 
+    // We only support GET for now until we add POST support here
     if (0 != strcmp(method, "GET")) {
         /* unexpected method */
         return MHD_NO;
     }
 
     if (&verbose != *ptr) {
-        /* The first time only the headers are valid,
-           do not respond in the first round... */
+        // The first time only the headers are valid, do not respond in the first round...
         *ptr = &verbose;
         return MHD_YES;
     }
 
-    if (0 != *upload_data_size) {
-        /* upload data in a GET!? */
-        return MHD_NO;
-    }
+    // the WEBSERVER instance
+    WEBSERVER *webserver = cls;
+
+    WEBSERVER_REQUEST request;
+    memset(&request, 0, sizeof (struct webserverRequest));
+    request.webserver = webserver;
+    request.connection = connection;
+    request.url = url;
+    request.method = method;
+    request.version = version;
+    request.upload_data = upload_data;
+    request.upload_data_size = upload_data_size;
+
+    /*
+        if (0 != *upload_data_size) {
+            // upload data in a GET!?
+            return MHD_NO;
+        }
+     */
 
     // if -vv then dump each requested url to the console
     if (verbose > 1)
-        logconsole("GET %s", url);
+        logconsole("%s %s", method, url);
 
     // Find a handler for this url. If we don't find one then the last one gets invoked as its only one with url NULL
-    WEBSERVER_HANDLER *h = (WEBSERVER_HANDLER *) list_getHead(&webserver.handlers);
+    WEBSERVER_HANDLER *h = (WEBSERVER_HANDLER *) list_getHead(&webserver->handlers);
     while (list_isNode(&h->node)) {
 
         int nl = h->node.name ? strlen(h->node.name) : 0;
@@ -64,7 +80,8 @@ static int handler(void * cls,
             *ptr = NULL;
 
             // Call the handler, if it returns MHD_NO then carry on searching
-            if (h->handler(connection, h, url) == MHD_YES)
+            request.handler = h;
+            if (h->handler(&request) == MHD_YES)
                 return MHD_YES;
         }
 
@@ -72,42 +89,42 @@ static int handler(void * cls,
     }
 
     // Static content?
-    if (staticHandler(connection, url) == MHD_YES)
+    if (staticHandler(&request) == MHD_YES)
         return MHD_YES;
     else
-        return notFoundHandler(connection, NULL);
+        return notFoundHandler(&request);
 }
 
-void webserver_start() {
+void webserver_start(WEBSERVER *webserver) {
     int flags = MHD_USE_THREAD_PER_CONNECTION;
 
-    if (webserver.stack & STACK_IPv4) {
+    if (webserver->stack & STACK_IPv4) {
         if (verbose > 1)
-            logconsole("Starting webserver on IPv4 port %d", webserver.port);
+            logconsole("Starting webserver on IPv4 port %d", webserver->port);
 
-        webserver.daemon4 = MHD_start_daemon(
+        webserver->daemon4 = MHD_start_daemon(
                 flags,
-                webserver.port,
+                webserver->port,
                 NULL, NULL,
-                &handler, NULL,
+                &handler, webserver,
                 MHD_OPTION_END);
-        if (webserver.daemon4 == NULL) {
+        if (webserver->daemon4 == NULL) {
             logconsole("Failed to create IPv4 webserver");
             return;
         }
     }
 
-    if (webserver.stack & STACK_IPv6) {
+    if (webserver->stack & STACK_IPv6) {
         if (verbose > 1)
-            logconsole("Starting webserver on IPv6 port %d", webserver.port);
+            logconsole("Starting webserver on IPv6 port %d", webserver->port);
 
-        webserver.daemon6 = MHD_start_daemon(
+        webserver->daemon6 = MHD_start_daemon(
                 flags | MHD_USE_IPv6,
-                webserver.port,
+                webserver->port,
                 NULL, NULL,
-                &handler, NULL,
+                &handler, webserver,
                 MHD_OPTION_END);
-        if (webserver.daemon6 == NULL) {
+        if (webserver->daemon6 == NULL) {
             logconsole("Failed to create IPv6 webserver");
             return;
         }

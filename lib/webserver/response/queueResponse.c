@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <area51/webserver.h>
+#include "../webserver-int.h"
 
 /**
  * Queues a response to a connection. This does it atomically so that the response will be queued even if another
@@ -15,19 +16,19 @@
  * @param response
  * @return 
  */
-int queueResponse(struct MHD_Connection * connection, struct MHD_Response **response) {
+int queueResponse(WEBSERVER_REQUEST *request, struct MHD_Response **response) {
     int ret;
-    
-    pthread_mutex_lock(&webserver.mutex);
-    
+
+    webserver_lock(request->webserver);
+
     if (*response) {
-        ret = MHD_queue_response(connection, MHD_HTTP_OK, *response);
+        ret = MHD_queue_response(request->connection, MHD_HTTP_OK, *response);
     } else {
         // Return error if there's no response available, usually before an image is available.
-        ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, webserver.notFoundResponse);
+        ret = MHD_queue_response(request->connection, MHD_HTTP_NOT_FOUND, request->webserver->notFoundResponse);
     }
-    
-    pthread_mutex_unlock(&webserver.mutex);
-    
+
+    webserver_unlock(request->webserver);
+
     return ret;
 }
