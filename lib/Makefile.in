@@ -1,0 +1,18 @@
+MODULE = area51-httpd
+OBJS =	webserver/core/init.o \
+	webserver/core/setDefaults.o \
+	webserver/core/start.o \
+	webserver/core/stop.o \
+	webserver/handlers/addHandler.o \
+	webserver/handlers/addResponseHandler.o \
+	webserver/handlers/notFound.o \
+	webserver/handlers/staticHandler.o \
+	webserver/response/getResponse.o \
+	webserver/response/queueResponse.o \
+	webserver/response/replaceResponse.o \
+	webserver/response/replaceResponseArray.o \
+	webserver/response/replaceResponseByteBuffer.o \
+	webserver/response/replaceResponseCharBuffer.o \
+	webserver/response/sendResponse.o
+
+include ../SubMakefile
