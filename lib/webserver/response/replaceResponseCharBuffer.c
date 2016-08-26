@@ -10,8 +10,8 @@
 #include <area51/webserver.h>
 #include "../webserver-int.h"
 
-void replaceResponseCharBuffer(WEBSERVER *webserver, const char *url, CharBuffer *b, const char *contentType) {
+void webserver_replaceResponseCharBuffer(WEBSERVER *webserver, const char *url, CharBuffer *b, const char *contentType) {
     int len;
     void *data = charbuffer_toarray(b, &len);
-    replaceResponseArray(webserver, url, data, len, contentType);
+    webserver_replaceResponseArray(webserver, url, data, len, contentType);
 }

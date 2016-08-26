@@ -70,6 +70,9 @@ extern "C" {
     extern int webserver_lock(WEBSERVER *);
     extern void webserver_unlock(WEBSERVER *);
 
+    extern int webserver_notFoundHandler(WEBSERVER_REQUEST *);
+    extern int webserver_staticHandler(WEBSERVER_REQUEST *);
+
 #ifdef __cplusplus
 }
 #endif

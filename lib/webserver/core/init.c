@@ -46,3 +46,10 @@ void webserver_enableIPv6(WEBSERVER *webserver) {
     webserver->stack |= STACK_IPv6;
 }
 
+int webserver_getPort(WEBSERVER *s) {
+    return s->port;
+}
+
+void webserver_setPort(WEBSERVER *s, int port) {
+    s->port = port;
+}

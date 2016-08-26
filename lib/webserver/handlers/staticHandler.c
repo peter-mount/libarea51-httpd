@@ -49,7 +49,7 @@ static void free_callback(void *cls) {
  * @param connection
  * @return 
  */
-int staticHandler(WEBSERVER_REQUEST *request) {
+int webserver_staticHandler(WEBSERVER_REQUEST *request) {
     char *p;
     int l;
     struct stat buf;

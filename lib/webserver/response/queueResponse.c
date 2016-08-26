@@ -16,7 +16,7 @@
  * @param response
  * @return 
  */
-int queueResponse(WEBSERVER_REQUEST *request, struct MHD_Response **response) {
+int webserver_queueResponse(WEBSERVER_REQUEST *request, struct MHD_Response **response) {
     int ret;
 
     webserver_lock(request->webserver);

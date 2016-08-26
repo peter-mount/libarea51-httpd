@@ -11,8 +11,8 @@
 #include "../webserver-int.h"
 
 static int serve(WEBSERVER_REQUEST *request) {
-    struct MHD_Response *response = getResponse(request->webserver, request->handler->node.name);
-    return response ? queueResponse(request, &response) : MHD_NO;
+    struct MHD_Response *response = webserver_getResponse(request->webserver, request->handler->node.name);
+    return response ? webserver_queueResponse(request, &response) : MHD_NO;
 }
 
 void webserver_add_response_handler(WEBSERVER *webserver, const char *url) {

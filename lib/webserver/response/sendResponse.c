@@ -10,7 +10,7 @@
 #include <area51/webserver.h>
 #include "../webserver-int.h"
 
-int sendResponse(WEBSERVER_REQUEST *request, int status, struct MHD_Response *response) {
+int webserver_sendResponse(WEBSERVER_REQUEST *request, int status, struct MHD_Response *response) {
     if (response) {
         int ret = MHD_queue_response(request->connection, status, response);
         MHD_destroy_response(response);

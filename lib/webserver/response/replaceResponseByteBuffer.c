@@ -10,8 +10,8 @@
 #include <area51/webserver.h>
 #include "../webserver-int.h"
 
-void replaceResponseByteBuffer(WEBSERVER *webserver, const char *url, struct bytebuffer *b, const char *contentType) {
+void webserver_replaceResponseByteBuffer(WEBSERVER *webserver, const char *url, struct bytebuffer *b, const char *contentType) {
     int len;
     void *data = bytebuffer_toarray(b, &len);
-    replaceResponseArray(webserver, url, data, len, contentType);
+    webserver_replaceResponseArray(webserver, url, data, len, contentType);
 }

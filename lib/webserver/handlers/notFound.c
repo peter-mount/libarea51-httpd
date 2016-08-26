@@ -16,6 +16,6 @@
  * @param connection
  * @return 
  */
-int notFoundHandler(WEBSERVER_REQUEST *request) {
-    return queueResponse(request, &request->webserver->notFoundResponse);
+int webserver_notFoundHandler(WEBSERVER_REQUEST *request) {
+    return webserver_queueResponse(request, &request->webserver->notFoundResponse);
 }

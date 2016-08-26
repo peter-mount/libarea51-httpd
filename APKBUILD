@@ -2,7 +2,7 @@
 
 pkgname="libarea51-httpd"
 pkgver="0.2"
-pkgrel="5"
+pkgrel="6"
 pkgdesc="Area51 HTTP server"
 arch="x86_64"
 url="https://area51.onl/"

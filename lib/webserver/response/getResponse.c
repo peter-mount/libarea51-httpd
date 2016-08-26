@@ -17,7 +17,7 @@
  * @param response Pointer to the pointer to get
  * @return The value at response at the time of the call, NULL if not able to get it
  */
-struct MHD_Response *getResponse(WEBSERVER *webserver, const char *url) {
+struct MHD_Response *webserver_getResponse(WEBSERVER *webserver, const char *url) {
     struct MHD_Response *ret = NULL;
     webserver_lock(webserver);
     ret = (struct MHD_Response *) hashmapGet(webserver->responseHandlers, (void *) url);

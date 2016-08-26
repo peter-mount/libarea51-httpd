@@ -89,10 +89,10 @@ static int handler(void * cls,
     }
 
     // Static content?
-    if (staticHandler(&request) == MHD_YES)
+    if (webserver_staticHandler(&request) == MHD_YES)
         return MHD_YES;
     else
-        return notFoundHandler(&request);
+        return webserver_notFoundHandler(&request);
 }
 
 void webserver_start(WEBSERVER *webserver) {
