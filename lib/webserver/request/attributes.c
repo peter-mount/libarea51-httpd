@@ -34,10 +34,10 @@ int webserver_setAttribute(Hashmap *scope, char *k, void *v, void (*f)(void *)) 
         return EXIT_FAILURE;
 
     Freeable *val = hashmapGet(scope, k);
-    if (val)
+    if (val) {
         freeable_set(val, v, f);
-    else {
-        char *key = strdup(key);
+    } else {
+        char *key = strdup(k);
         if (!key)
             return EXIT_FAILURE;
 
