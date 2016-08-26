@@ -76,6 +76,7 @@ extern const char *webserver_getRequestMethod(WEBSERVER_REQUEST *);
 extern const char *webserver_getRequestUrl(WEBSERVER_REQUEST *);
 extern const char *webserver_getRequestVersion(WEBSERVER_REQUEST *);
 extern const char *webserver_getRequestUploadData(WEBSERVER_REQUEST *, size_t *);
+extern bool webserver_isUrlValid(WEBSERVER_REQUEST *);
 
 extern void *webserver_getUserData(WEBSERVER_REQUEST *);
 
