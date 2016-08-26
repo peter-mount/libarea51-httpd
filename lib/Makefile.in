@@ -1,15 +1,18 @@
 MODULE = area51-httpd
 OBJS =	webserver/core/init.o \
+	webserver/core/lock.o \
 	webserver/core/setDefaults.o \
 	webserver/core/start.o \
 	webserver/core/stop.o
 
 OBJS +=	webserver/handlers/addHandler.o \
 	webserver/handlers/addResponseHandler.o \
+	webserver/handlers/getUserData.o \
 	webserver/handlers/notFound.o \
 	webserver/handlers/staticHandler.o
 
 OBJS += webserver/request/getConnection.o \
+	webserver/request/getParameter.o \
 	webserver/request/getMethod.o \
 	webserver/request/getUploadData.o \
 	webserver/request/getUrl.o \

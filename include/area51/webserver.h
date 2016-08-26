@@ -70,6 +70,7 @@ extern int notFoundHandler(WEBSERVER_REQUEST *);
 extern int staticHandler(WEBSERVER_REQUEST *);
 
 extern struct MHD_Connection *webserver_getRequestConnection(WEBSERVER_REQUEST *);
+extern const char *webserver_getRequestParameter(WEBSERVER_REQUEST *, const char *);
 extern const char *webserver_getRequestMethod(WEBSERVER_REQUEST *);
 extern const char *webserver_getRequestUrl(WEBSERVER_REQUEST *);
 extern const char *webserver_getRequestVersion(WEBSERVER_REQUEST *);
