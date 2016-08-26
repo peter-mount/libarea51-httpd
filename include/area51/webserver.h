@@ -78,9 +78,7 @@ extern const char *webserver_getRequestVersion(WEBSERVER_REQUEST *);
 extern const char *webserver_getRequestUploadData(WEBSERVER_REQUEST *, size_t *);
 extern bool webserver_isUrlValid(WEBSERVER_REQUEST *);
 
-extern void *webserver_getRequestAttribute(WEBSERVER_REQUEST *, char *);
-extern int webserver_setRequestAttribute(WEBSERVER_REQUEST *, char *, void *, void (*)(void *));
-
+extern int webserver_setAttribute(Hashmap *, char *, void *, void (*)(void *));
 extern void *webserver_getUserData(WEBSERVER_REQUEST *);
 
 #endif /* AREA51_WEBSERVER_H */
