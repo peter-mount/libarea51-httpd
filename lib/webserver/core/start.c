@@ -14,6 +14,54 @@
 
 extern int verbose;
 
+static int runRequest(WEBSERVER_REQUEST *request, void**ptr) {
+    /*
+        if (0 != *upload_data_size) {
+            // upload data in a GET!?
+            return MHD_NO;
+        }
+     */
+
+    // if -vv then dump each requested url to the console
+    if (verbose > 1)
+        logconsole("%s %s", request->method, request->url);
+
+    // Find a handler for this url. If we don't find one then the last one gets invoked as its only one with url NULL
+    WEBSERVER_HANDLER *h = (WEBSERVER_HANDLER *) list_getHead(&request->webserver->handlers);
+    while (list_isNode(&h->node)) {
+
+        int nl = h->node.name ? strlen(h->node.name) : 0;
+
+        bool match = false;
+
+        // Dynamic paths ending in *
+        if (nl > 0 && h->node.name[nl - 1] == '*')
+            match = strncmp(request->url, h->node.name, nl - 1) == 0;
+
+        // Static paths (Not ending in *)
+        if (!match)
+            match = strcmp(request->url, h->node.name) == 0;
+
+        if (match) {
+            // Clear the pointer
+            *ptr = NULL;
+
+            // Call the handler, if it returns MHD_NO then carry on searching
+            request->handler = h;
+            if (h->handler(request) == MHD_YES)
+                return MHD_YES;
+        }
+
+        h = (WEBSERVER_HANDLER *) h->node.n_succ;
+    }
+
+    // Static content?
+    if (webserver_staticHandler(request) == MHD_YES)
+        return MHD_YES;
+    else
+        return webserver_notFoundHandler(request);
+}
+
 static int handler(void * cls,
         struct MHD_Connection * connection,
         const char * url,
@@ -35,12 +83,9 @@ static int handler(void * cls,
         return MHD_YES;
     }
 
-    // the WEBSERVER instance
-    WEBSERVER *webserver = cls;
-
     WEBSERVER_REQUEST request;
     memset(&request, 0, sizeof (struct webserverRequest));
-    request.webserver = webserver;
+    request.webserver = cls;
     request.connection = connection;
     request.url = url;
     request.method = method;
@@ -48,51 +93,13 @@ static int handler(void * cls,
     request.upload_data = upload_data;
     request.upload_data_size = upload_data_size;
 
-    /*
-        if (0 != *upload_data_size) {
-            // upload data in a GET!?
-            return MHD_NO;
-        }
-     */
+    int r = runRequest(&request, ptr);
 
-    // if -vv then dump each requested url to the console
-    if (verbose > 1)
-        logconsole("%s %s", method, url);
+    // Free the request scope if one came into existence
+    if (request.requestScope)
+        webserver_freeScope(request.requestScope);
 
-    // Find a handler for this url. If we don't find one then the last one gets invoked as its only one with url NULL
-    WEBSERVER_HANDLER *h = (WEBSERVER_HANDLER *) list_getHead(&webserver->handlers);
-    while (list_isNode(&h->node)) {
-
-        int nl = h->node.name ? strlen(h->node.name) : 0;
-
-        bool match = false;
-
-        // Dynamic paths ending in *
-        if (nl > 0 && h->node.name[nl - 1] == '*')
-            match = strncmp(url, h->node.name, nl - 1) == 0;
-
-        // Static paths (Not ending in *)
-        if (!match)
-            match = strcmp(url, h->node.name) == 0;
-
-        if (match) {
-            // Clear the pointer
-            *ptr = NULL;
-
-            // Call the handler, if it returns MHD_NO then carry on searching
-            request.handler = h;
-            if (h->handler(&request) == MHD_YES)
-                return MHD_YES;
-        }
-
-        h = (WEBSERVER_HANDLER *) h->node.n_succ;
-    }
-
-    // Static content?
-    if (webserver_staticHandler(&request) == MHD_YES)
-        return MHD_YES;
-    else
-        return webserver_notFoundHandler(&request);
+    return r;
 }
 
 void webserver_start(WEBSERVER *webserver) {

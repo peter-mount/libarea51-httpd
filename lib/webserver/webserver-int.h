@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <area51/hashmap.h>
 #include <area51/list.h>
 #include <area51/webserver.h>
 
@@ -30,6 +31,8 @@ extern "C" {
         // Uploaded data
         const char *upload_data;
         size_t *upload_data_size;
+        // Request scope parameters (optional)
+        Hashmap *requestScope;
     } WEBSERVER_REQUEST;
 
     struct webserver {
@@ -72,6 +75,10 @@ extern "C" {
 
     extern int webserver_notFoundHandler(WEBSERVER_REQUEST *);
     extern int webserver_staticHandler(WEBSERVER_REQUEST *);
+
+    extern void webserver_freeScope(Hashmap *);
+    extern void *webserver_getAttribute(Hashmap *, char *);
+    extern int webserver_setAttribute(Hashmap *, char *, void *, void (*)(void *));
 
 #ifdef __cplusplus
 }
