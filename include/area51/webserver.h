@@ -73,6 +73,7 @@ extern void webserver_stop(WEBSERVER *);
 extern struct MHD_Connection *webserver_getRequestConnection(WEBSERVER_REQUEST *);
 extern const char *webserver_getRequestParameter(WEBSERVER_REQUEST *, const char *);
 extern const char *webserver_getRequestMethod(WEBSERVER_REQUEST *);
+extern int webserver_setRequestAttribute(WEBSERVER_REQUEST *, char *, void *, void (*)(void *));
 extern const char *webserver_getRequestUrl(WEBSERVER_REQUEST *);
 extern const char *webserver_getRequestVersion(WEBSERVER_REQUEST *);
 extern const char *webserver_getRequestUploadData(WEBSERVER_REQUEST *, size_t *);
