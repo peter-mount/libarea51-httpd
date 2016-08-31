@@ -1,8 +1,8 @@
 # Maintainer: Peter Mount <peter@retep.org>
 
 pkgname="libarea51-httpd"
-pkgver="0.2"
-pkgrel="13"
+pkgver="0.3"
+pkgrel="2"
 pkgdesc="Area51 HTTP server"
 arch="x86_64"
 url="https://area51.onl/"
